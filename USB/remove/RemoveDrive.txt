@@ -1,0 +1,104 @@
+
+RemoveDrive V2.3.3.0 - prepares removable drives for safe removal
+Freeware by Uwe Sieber - www.uwe-sieber.de
+
+Win32 version works on Windows 2000, XP and higher including x64 version of Windows.
+x64 version works on x64 versions Windows only.
+
+Homepage: http://www.uwe-sieber.de/drivetools_e.html
+
+
+Usage:
+RemoveDrive DriveSpec [-l][-h][-b][-i][-s][-w:nnnn]
+                     
+DriveSpec  is the drive to remove, e.g. U: or an NTFS mountpoint as "C:\CardReader\Multi Reader SD"
+           or . for the current drive
+           or \ for the drive of the RemoveDrive.exe
+           or a volume name like \\?\Volume{433619ed-c6ea-11d9-a3b2-806d6172696f}
+           or a kernel name like \Device\HarddiskVolume2 (Volume)
+           or a kernel name like \Device\Harddisk2\DR0 (Disk)
+           or a partition name like \Device\Harddisk2\Partition1
+           or a device ID
+           or a friendly name like 'Corsair Voyager'
+           Wildcards can be used.
+[-L]       loop until success
+[-e]       try to dismount and eject if the removal fails
+[-h]       show open handles (admin rights required, exprimental, may freeze!)
+[-h:X]     show open handles on a different drive (e.g. a TrueCrypt volume whose container is on the drive to remove)
+[-w:nnnn]  wait nnnn milliseconds before close
+[-s]       self delete removedrive.exe
+[-b]       let Windows show the "Safe To Remove Hardware" balloon tip
+[-i]       stop Windows indexing service (CiSvc) for a moment if required (admins)
+[-d]       show debug information
+
+
+Only one drive is prepared for safe removal.
+
+
+Sample:
+
+removedrive U: -L -H -W:1000
+
+
+
+Returns Errorlevels:
+
+0 - successfully removed a device
+1 - device identified but not removed
+2 - device not found or parameters are invalid
+
+4 - RemoveDrive.exe located on the drive to remove -> temporary copy 
+    created and executed
+
+If the removal fails then someone still accesses the drive. This can be
+something banal like an open Word document, a mounted TrueCrypt container
+or some kind of monitoring tool like a virus scanner.
+
+By means of SysInternals ProcessExplorer you may discover which program
+holds an open handle to the drive.
+http://www.microsoft.com/technet/sysinternals/utilities/ProcessExplorer.html
+
+After starting it go to 'Find' -> 'Find Handle or DLL', enter a part of the
+volume's or the drive's DOS device name (as volume12 or disk5) and search.
+Searching for the drive's drive letter may give a hit too.
+
+
+If started with admin previleges then an removed USB drive can be reactivated
+by means of RestartSrDev:
+http://www.uwe-sieber.de/drivetools_e.html#restart
+
+
+About open handles
+
+Removedrive does no use a driver for gaterhing handle information. Therefore
+when hitting the handle of a waiting object as a mutex then the function for
+getting the handle name does not return, the thread freezes and the RemoveDrive
+process will not end until this waiting object stops waiting or is closed.
+Each handle request is done in its own thread, so the rest will keep going.
+
+If this happens then RemoveDrive will
+- write the name of the process which hold this handle into the RemoveDrive.ini
+  and never touch this process again
+- when supposed to end then it tries to hide its console window because the
+  RemoveDrive process will not end
+
+
+
+
+
+Licence
+
+
+RemoveDrive is Freeware.
+
+Allowed:
+- usage in any environment, including commercial
+- include in software products, including commercial
+- include on CD/DVD of computer magazines
+
+Not allowed:
+- changing any of the files
+
+
+
+
